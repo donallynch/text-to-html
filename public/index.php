@@ -13,9 +13,6 @@ $htmlifier = new \App\Services\TextToHtml();
 $htmlifier->setInput($input);
 $result = $htmlifier->go();
 
-/* Set json header */
-header('Content-Type: application/json');
-
 /* Ensure there were no errors */
 if ($result['status'] !== 200) {
     echo json_encode($result);
