@@ -1,6 +1,7 @@
 {
   "require": {
-    "twbs/bootstrap": "^4.1"
+    "twbs/bootstrap": "^4.1",
+    "pimple/pimple": "^3.2"
   },
   "autoload": {
       "psr-4": {

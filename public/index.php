@@ -3,13 +3,12 @@
 namespace App;
 
 include '../App/Config/config.php';
-require '../vendor/autoload.php';
 
 /* Sample input text */
 $input = $_POST['text'];
 
-/** @var \App\Services\TextToHtml $htmlifier */
-$htmlifier = new \App\Services\TextToHtml();
+/** @var \App\Services\TextToHtml $htmlifier Retrieve service from Pimple service container */
+$htmlifier = $container['textToHtml'];
 $htmlifier->setInput($input);
 $result = $htmlifier->go();
 
