@@ -11,13 +11,21 @@ namespace App\Services;
  */
 class TextToHtml {
 
+    /** @var string $input */
     private $input;
+
+    /** @var string $output */
     private $output;
+
+    /** @var array $paragraphs */
     private $paragraphs;
 
     /** @var bool $isOpenInNewWindow Do anchor tags open in new window on click? Default: true */
     private $isOpenInNewWindow = true;
 
+    /**
+     * @return array
+     */
     public function go()
     {
         if ($this->input === null) {
@@ -25,33 +33,28 @@ class TextToHtml {
         }
 
         /* Convert input text to array of paragraphs */
-        $output = explode("\n", $this->input);
+        $this->paragraphs = explode("\n", $this->input);
 
         /* Handle URLs */
-        $output = $this->urls($output);
-
-        /* Convert text to array of lines / paragraphs */
-        $this->paragraphs = explode("\n", $output);
+        $this->urls();
 
         /* Handle lists */
         $this->lists();
 
-        /* Merge multiple newlines into single newline */
-        $this->mergeMultiNewlines();
-
+        /* Additional functions */
         foreach ($this->paragraphs as $key => $value) {
-            //$this->h1($p, $q);
-            $this->strong($key, $value);
+            $this->headings($key, $value);
+//            $this->strong($key, $value);
             $this->paragraphs($key, $value);
         }
 
-        /* Prepare output */
-        $output = '';
-        foreach ($this->paragraphs as $key => $value) {
-            $output .= $value;
-        }
+        /* Merge multiple newlines into single newline */
+        $this->mergeMultiNewlines();
 
-        $this->output = $output;
+
+
+        /* Prepare output */
+        $this->prepareOutput();
 
         return ['status' => 200];
     }
@@ -98,12 +101,23 @@ class TextToHtml {
     }
 
     /**
+     * Convert paragraphs array to output string
+     */
+    private function prepareOutput()
+    {
+        $output = '';
+        foreach ($this->paragraphs as $key => $value) {
+            $output .= $value;
+        }
+
+        $this->output = $output;
+    }
+
+    /**
      * @return string
      */
     private function urls()
     {
-        $output = '';
-
         /* Foreach line of text */
         for ($i = 0; $i <= count($this->paragraphs)-1; $i++) {
 
@@ -124,11 +138,9 @@ class TextToHtml {
             $text = str_replace("’", "&apos;", $text);
             $text = str_replace("`", "&apos;", $text);
 
-            /* Add line of text to output */
-            $output .= $text . "\n";
+            /* Replace modified paragraph */
+            $this->paragraphs[$i] = $text;
         }
-
-        return $output;
     }
 
     /**
@@ -151,18 +163,18 @@ class TextToHtml {
     }
 
     /**
-     * Identify lines that should be wrapped in H1 HTML tags
+     * Identify lines that should be wrapped in H1/H2/H3/H4 HTML tags
      *
      * @param $p
      * @param $q
      */
-    private function h1($p, $q)
+    private function headings($p, $q)
     {
         $lineLength = strlen($q);
 
         /* If line is greater than 0 and at most 60 characters */
-        if ($lineLength > 0 && $lineLength <= 60) {
-            $this->paragraphs[$p] = '<h1>' . $this->paragraphs[$p] . '</h1>';
+        if ($lineLength > 16 && $lineLength <= 100 && in_array(substr($this->paragraphs[$p], -1), [':',';'])) {
+            $this->paragraphs[$p] = '<h3>' . $this->paragraphs[$p] . '</h3>';
         }
     }
 
@@ -198,7 +210,7 @@ class TextToHtml {
                 $pre = '';
                 if (count($prev) === 0) {
                     $pre = '
-<p>
+<p class="list">
     <ol>';
                 }
 
