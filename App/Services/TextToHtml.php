@@ -35,6 +35,12 @@ class TextToHtml {
         /* Convert input text to array of paragraphs */
         $this->paragraphs = explode("\n", $this->input);
 
+        /* Merge multiple newlines into single newline */
+        $this->mergeMultipleNewlines();
+
+        /* Replace HTML entities */
+        $this->replaceHtmlEntities();
+
         /* Handle URLs */
         $this->urls();
 
@@ -47,11 +53,6 @@ class TextToHtml {
 //            $this->strong($key, $value);
             $this->paragraphs($key, $value);
         }
-
-        /* Merge multiple newlines into single newline */
-        $this->mergeMultiNewlines();
-
-
 
         /* Prepare output */
         $this->prepareOutput();
@@ -134,10 +135,6 @@ class TextToHtml {
                 $this->paragraphs[$i]
             );
 
-            /* Replace ’` etc with &apos; */
-            $text = str_replace("’", "&apos;", $text);
-            $text = str_replace("`", "&apos;", $text);
-
             /* Replace modified paragraph */
             $this->paragraphs[$i] = $text;
         }
@@ -146,7 +143,7 @@ class TextToHtml {
     /**
      * Merge multiple newlines into single new line
      */
-    private function mergeMultiNewlines()
+    private function mergeMultipleNewlines()
     {
         $newlineCount = 0;
         foreach ($this->paragraphs as $key => $value) {
@@ -160,6 +157,9 @@ class TextToHtml {
                 unset($this->paragraphs[$key]);
             }
         }
+
+        /* Reset array keys after unset */
+        $this->paragraphs = array_values($this->paragraphs);
     }
 
     /**
@@ -209,19 +209,16 @@ class TextToHtml {
             if (count($current) > 0) {
                 $pre = '';
                 if (count($prev) === 0) {
-                    $pre = '
-<p class="list">
-    <ol>';
+                    $pre = '<ol>';
                 }
 
                 $this->paragraphs[$i] = $pre . '
-        <li>' . $this->paragraphs[$i] . '</li>';
+    <li>' . $this->paragraphs[$i] . '</li>';
             }
 
             if (count($current) === 0 && (is_array($prev) && count($prev) > 0)) {
                 $this->paragraphs[$i] = $this->paragraphs[$i] . '
-    </ol>
-</p>
+</ol>
 ';
             }
 
@@ -256,7 +253,7 @@ class TextToHtml {
     {
         $size = count($this->paragraphs);
 
-        /* If it's the last line/paragraph of the input file; add a closing </p> tag at the end */
+        /* If it's the last line/paragraph of the input file; wrap in p tags */
         if ($p + 1 === $size) {
             $this->paragraphs[$p] = '<p>
 ' . $this->paragraphs[$p] . '
@@ -270,6 +267,27 @@ class TextToHtml {
 ' . $this->paragraphs[$p-1] . '
 </p>
 ';
+        }
+    }
+
+    /**
+     * Replace commas, quotes etc with HTML entities
+     */
+    private function replaceHtmlEntities()
+    {
+        /* Foreach line of text */
+        for ($i = 0; $i <= count($this->paragraphs)-1; $i++) {
+            $text = str_replace("’", "&apos;", $this->paragraphs[$i]);
+            $text = str_replace("`", "&apos;", $text);
+            $text = str_replace("'", "&apos;", $text);
+            $text = str_replace('"', "&quot;", $text);
+            $text = str_replace('<', "&lt;", $text);
+            $text = str_replace('>', "&gt;", $text);
+            $text = str_replace('&', "&amp;", $text);
+            $text = str_replace('©', "&copy;", $text);
+
+            /* Replace modified paragraph */
+            $this->paragraphs[$i] = $text;
         }
     }
 }
