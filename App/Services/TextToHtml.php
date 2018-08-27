@@ -50,7 +50,7 @@ class TextToHtml {
         /* Additional functions */
         foreach ($this->paragraphs as $key => $value) {
             $this->headings($key, $value);
-//            $this->strong($key, $value);
+            $this->strong($key, $value);
             $this->paragraphs($key, $value);
         }
 
@@ -237,7 +237,7 @@ class TextToHtml {
         $ending = substr(trim($q), -1);
 
         /* If line ends with :, ; */
-        if ($ending === ':' || $ending === ';') {
+        if ($ending === ':' ) {
             $this->paragraphs[$p] = '<strong>' . $this->paragraphs[$p] . '</strong>';
         }
     }
@@ -277,13 +277,14 @@ class TextToHtml {
     {
         /* Foreach line of text */
         for ($i = 0; $i <= count($this->paragraphs)-1; $i++) {
-            $text = str_replace("’", "&apos;", $this->paragraphs[$i]);
+            $text = str_replace('&', "&amp;", $this->paragraphs[$i]);
+            $text = str_replace("’", "&apos;", $text);
             $text = str_replace("`", "&apos;", $text);
             $text = str_replace("'", "&apos;", $text);
             $text = str_replace('"', "&quot;", $text);
             $text = str_replace('<', "&lt;", $text);
             $text = str_replace('>', "&gt;", $text);
-            $text = str_replace('&', "&amp;", $text);
+
             $text = str_replace('©', "&copy;", $text);
 
             /* Replace modified paragraph */
