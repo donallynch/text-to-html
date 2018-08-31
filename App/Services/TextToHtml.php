@@ -208,7 +208,8 @@ class TextToHtml {
             /* If current list */
             if (count($current) > 0) {
                 $pre = '';
-                if (count($prev) === 0) {
+
+                if (is_array($prev) && count($prev) === 0) {
                     $pre = '<ol>';
                 }
 
@@ -238,7 +239,8 @@ class TextToHtml {
 
         /* If line ends with :, ; */
         if ($ending === ':' ) {
-            $this->paragraphs[$p] = '<strong>' . $this->paragraphs[$p] . '</strong>';
+            $this->paragraphs[$p] = '<strong>' . $this->paragraphs[$p] . '</strong>
+';
         }
     }
 
@@ -252,15 +254,6 @@ class TextToHtml {
     private function paragraphs($p, $line)
     {
         $size = count($this->paragraphs);
-
-        /* If it's the last line/paragraph of the input file; wrap in p tags */
-        if ($p + 1 === $size) {
-            $this->paragraphs[$p] = '<p>
-' . $this->paragraphs[$p] . '
-</p>
-';
-        }
-
         /* If the line is empty; wrap previous line/paragraph in P tags */
         if ($line === '') {
             $this->paragraphs[$p-1] = '<p>
